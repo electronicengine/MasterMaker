@@ -26,12 +26,14 @@ AWeaponBrick::AWeaponBrick()
 
 }
 
+void AWeaponBrick::notifyVehicleDetached()
+{
+    removeOwner();
+}
+
 void AWeaponBrick::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
-    if (checkWeaponDetached())
-        return;
 
     if (Owner_Car) {
         if (Owner_Car->carHasPassenger() && Type_ == WeaponType::fire)
@@ -69,6 +71,7 @@ void AWeaponBrick::addedToVehicle(AVehicleBase* Vehicle)
     if (Type_ == WeaponType::fire) {
         enablePhysics(false);
         setCollisionProfile("OverlapAll");
+
     }
 
 }
@@ -94,34 +97,6 @@ void AWeaponBrick::removeOwner()
 
 }
 
-bool AWeaponBrick::checkWeaponDetached()
-{
-
-    if (Owner_Car) {
-        if (Owner_Car->IsActorBeingDestroyed()) {
-            removeOwner();
-            Owned_ = false;
-            return true;
-        }
-        Owned_ = true;
-        if ((Owner_Car->GetActorLocation() - GetActorLocation()).Size() >= 200) {
-            removeOwner();
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    else {
-        if (Owned_) {
-            removeOwner();
-            Owned_ = false;
-            return true;
-        }
-    }
-
-    return false;
-}
 
 void AWeaponBrick::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {

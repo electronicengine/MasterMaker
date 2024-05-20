@@ -18,6 +18,7 @@
 
 class ABrick;
 class AVehicleBase;
+class AWeaponBrick;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -56,11 +57,13 @@ public:
     IPlugInterface* Owner_Item;
     FRotator Offset_Rotation;
     FVector Offset_Location;
+    AWeaponBrick* Attached_Weapon;
     int Id_;
 
     virtual USceneComponent* CreatePluginPoint(FString Name) = 0;
     void setupPluginPoints(const FVector& Begining_Pivot, int PluginNumberWidth, int PluginNumberHeight);
     void setupSidePlugPoints(const FVector& Begining_Pivot, int PluginNumberWidth, int PluginNumberHeight);
+    void setAttachedWeapon(AWeaponBrick* Object);
 
     float calculateDistance(const FVector& Vector1, const FVector& Vector2);
     int getClosestPluginIndex(const std::vector<float>& Array);

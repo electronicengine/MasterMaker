@@ -4,6 +4,7 @@
 #include "PlugInterface.h"
 #include "../brick/Brick.h"
 #include "../brick/MechanicBrick.h"
+#include "../brick/weapon/WeaponBrick.h"
 #include "../vehicle/VehicleBase.h"
 #include <vector>
 #include "Engine/Engine.h"
@@ -417,6 +418,15 @@ void IPlugInterface::attachItem(ABrick* Object, const FVector& Location, const F
     }
 }
 
+void IPlugInterface::setAttachedWeapon(AWeaponBrick* Object) {
+
+    Attached_Weapon = Object;
+
+    if(Owner_Item)
+        Owner_Item->setAttachedWeapon(Object);
+
+}
+
 void IPlugInterface::setOwner(IPlugInterface* Object)
 {
 
@@ -446,6 +456,9 @@ void IPlugInterface::addWeapon(ABrick* Object)
         Cast<AWeaponBrick>(Object)->addedToVehicle(Cast<AVehicleBase>(this));
     }
 
+    setAttachedWeapon(Cast<AWeaponBrick>(Object));
+    
+
 }
 
 void IPlugInterface::addSeat(ABrick* Object)
@@ -474,6 +487,10 @@ void IPlugInterface::notifyToOwnerItemDestroyed(int Id)
 {
     if (Owner_Item) {
         Owner_Item->Plugged_Items_OnIt.erase(Id);
+    }
+
+    if (Owner_Car && Attached_Weapon) {
+        Attached_Weapon->notifyVehicleDetached();
     }
 
 }

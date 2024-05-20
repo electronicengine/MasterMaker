@@ -56,14 +56,13 @@ public:
     void addedToVehicle(AVehicleBase* Vehicle);
     void aimToRotation(FRotator& Rotation);
     void removeOwner();
-    bool checkWeaponDetached();
     void makePluginSettings();
     void makeCluster();
     void applyForce(const FVector& ImpulseForce, const FVector& TorqueForce, const FVector& ForceLocation);
     void scaleBomb(float Rate);
     FVector getBarrelLocation() { return Brick->GetSocketLocation("barrel"); }
     FVector getBarrelDirection() { return  Brick->GetSocketRotation("barrel").Vector(); }
-
+    void notifyVehicleDetached();
 
     virtual void Tick(float DeltaTime) override;
     UFUNCTION()

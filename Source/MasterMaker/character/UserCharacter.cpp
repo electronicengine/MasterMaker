@@ -315,8 +315,8 @@ void AUserCharacter::Tick(float DeltaTime)
 
 void AUserCharacter::OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Location)
 {
-    float CurrentTime = GetWorld()->GetTimeSeconds();
-    float TimeSinceLastTouch = CurrentTime - Last_Touch;
+    double CurrentTime = FPlatformTime::Seconds() * 1000.0;
+    double TimeSinceLastTouch = CurrentTime - Last_Touch;
 
     if (Sling_Mode_Enable) {
         Stretch_Begin = Location;
@@ -330,7 +330,7 @@ void AUserCharacter::OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Locat
     else {
 #ifndef DESKTOP_BUILD
 
-        if (TimeSinceLastTouch < 1 && Last_Touch != 0)
+        if (TimeSinceLastTouch < 200 && Last_Touch != 0)
         {
             if(Builder_Mode_Enable)
                 Player_State->fire();

@@ -203,10 +203,10 @@ void AVehicleBase::OnTouchPressed(ETouchIndex::Type FingerIndex, FVector Locatio
 
 #ifndef DESKTOP_BUILD
 
-    float CurrentTime = GetWorld()->GetTimeSeconds();
+    double CurrentTime = FPlatformTime::Seconds() * 1000.0;
     float TimeSinceLastTouch = CurrentTime - Last_Touch;
 
-    if (TimeSinceLastTouch < 1 && Last_Touch != 0)
+    if (TimeSinceLastTouch < 200 && Last_Touch != 0)
     {
         fire();
     }
