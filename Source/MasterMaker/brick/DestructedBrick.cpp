@@ -79,7 +79,7 @@ void ADestructedBrick::setImpactPointAndVelocity(const FVector& ImpactPoint, con
     for (UStaticMeshComponent* comp : Pieces)
     {
         //comp->AddImpulseAtLocation(Velocity, ImpactPoint);
-        comp->AddForceAtLocation(Velocity * comp->GetBodyInstance()->GetBodyMass() * 1000, ImpactPoint);
+        comp->AddForceAtLocation(Velocity * comp->GetBodyInstance()->GetBodyMass() , ImpactPoint);
         //comp->AddRadialImpulse(ImpactPoint, 100, Velocity.Size(), ERadialImpulseFalloff::RIF_Linear, false);
     }
 }

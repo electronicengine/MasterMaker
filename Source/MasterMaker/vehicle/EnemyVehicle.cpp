@@ -79,9 +79,10 @@ void AEnemyVehicle::fireToEnemy(FRotator& ToEnemyRot)
         {
 
             for (std::pair<int, AWeaponBrick*> weapon : Weapons) {
-                weapon.second->aimToRotation(ToEnemyRot);
-                weapon.second->fire();
-
+                if (!weapon.second->IsActorBeingDestroyed()) {
+                    weapon.second->aimToRotation(ToEnemyRot);
+                    weapon.second->fire();
+                }
             }
         }
 

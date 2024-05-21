@@ -65,7 +65,7 @@ void ABullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitive
 
     if (item)
     {
-        item->addDamage(Strenght_ * speed, Hit.ImpactPoint, 0.005 * NormalImpulse);
+        item->addDamage(Strenght_ * speed, Hit.ImpactPoint,  NormalImpulse);
     }
  
 

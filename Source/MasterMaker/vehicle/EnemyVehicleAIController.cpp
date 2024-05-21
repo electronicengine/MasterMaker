@@ -18,7 +18,7 @@
 
 AEnemyVehicleAIController::AEnemyVehicleAIController()
 {
-    PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = true;
 
     Enemy_Found = false;
     Current_Task_Index = 0;
@@ -43,9 +43,22 @@ void AEnemyVehicleAIController::Tick(float DeltaSeconds)
 {
 
 
-  
+    TargetVehicle = Cast<AVehicleBase>(GetWorld()->GetFirstPlayerController()->GetPawn());
+    if (TargetVehicle) {
+        Enemy_Found = true;
 
+        Enemy_Location = TargetVehicle->GetActorLocation();
 
+        if (TargetVehicle->carHasPassenger())
+            attackToUser();
+    }
+
+    Cast<AVehicleBase>(GetPawn())->checkVehicleTurnedDown();
+}
+
+void AEnemyVehicleAIController::Destroyed()
+{
+    GetWorld()->GetTimerManager().ClearTimer(Attack_Timer);
 }
 
 
@@ -197,24 +210,9 @@ int AEnemyVehicleAIController::turnArround()
 
 void AEnemyVehicleAIController::BeginPlay()
 {
+
+
     Super::BeginPlay();
-
-    FTimerHandle TimerHandle;
-
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, [=]()
-        {
-            TargetVehicle = Cast<AVehicleBase>(GetWorld()->GetFirstPlayerController()->GetPawn());
-            if (TargetVehicle) {
-                Enemy_Found = true;
-
-                Enemy_Location = TargetVehicle->GetActorLocation();
-
-                if (TargetVehicle->carHasPassenger())
-                    attackToUser();
-            }
-
-        }, 0.3f, true);
-
 
    
 }

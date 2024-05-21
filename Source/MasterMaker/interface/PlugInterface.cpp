@@ -490,7 +490,8 @@ void IPlugInterface::notifyToOwnerItemDestroyed(int Id)
     }
 
     if (Owner_Car && Attached_Weapon) {
-        Attached_Weapon->notifyVehicleDetached();
+        if(!Attached_Weapon->IsActorBeingDestroyed())
+            Attached_Weapon->notifyVehicleDetached();
     }
 
 }
