@@ -153,6 +153,8 @@ void AUserCharacter::BeginPlay()
     Interaction_Component->OnComponentBeginOverlap.AddDynamic(this, &AUserCharacter::OnInteractBegin);
     Interaction_Component->OnComponentEndOverlap.AddDynamic(this, &AUserCharacter::OnInteractEnd);
     Punch_Component->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("punch_socket"));
+    GetMesh()->SetCollisionProfileName("OverlapAll");
+    GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Overlap);
 
 }
 

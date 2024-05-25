@@ -19,6 +19,8 @@
 
 #include "UserCharacter.generated.h"
 
+#define COLLISION_PROJECTILE ECC_GameTraceChannel1
+#define COLLISION_CHARACTER ECC_GameTraceChannel2
 
 //#define DESKTOP_BUILD 1
 

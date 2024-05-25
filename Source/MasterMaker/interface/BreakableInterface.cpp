@@ -105,6 +105,12 @@ void IBreakableInterface::breakItem(const FVector& ImpactPoint, const FVector& V
     if (Cast<AMechanicBrick>(this))
         return;
 
+    if (Cast<AEnemyCharacter>(this)) {
+        Cast<AEnemyCharacter>(this)->GetMesh()->SetCollisionProfileName("OverlapAll");
+        Cast<AEnemyCharacter>(this)->GetCapsuleComponent()->SetCollisionProfileName("OverlapAll");
+
+    }
+
     FVector spawn_location = Cast<AActor>(this)->GetActorLocation();
     FRotator spawn_rotation = Cast<AActor>(this)->GetActorRotation();
     Breaked_ = true;
@@ -116,17 +122,17 @@ void IBreakableInterface::breakItem(const FVector& ImpactPoint, const FVector& V
 
     }
 
-    if(Cast<AActor>(this))
-        Cast<AActor>(this)->Destroy();
+    Cast<AActor>(this)->Destroy();
 
     UWorld* world = Cast<AActor>(this)->GetWorld();
     APlayerController* controller = UGameplayStatics::GetPlayerController(world, 0);
     AUserPlayerState* player_state = Cast<AUserPlayerState>(controller->GetPawn()->GetPlayerState());
-    player_state->destroyedBrick(Destroyed_Id);
+    player_state->destroyedBrick(Destroyed_Id);   
 
     ADestructedBrick* dest_ptr;
 
     dest_ptr = world->SpawnActor<ADestructedBrick>(ADestructedBrick::StaticClass(), spawn_location, spawn_rotation);
+
     dest_ptr->setMesh(Item_Name);
     dest_ptr->setColor(Item_Color);
 
@@ -135,6 +141,8 @@ void IBreakableInterface::breakItem(const FVector& ImpactPoint, const FVector& V
     const FDetachmentTransformRules& detachment_rules = FDetachmentTransformRules(EDetachmentRule::KeepWorld,
         EDetachmentRule::KeepWorld,
         EDetachmentRule::KeepWorld, true);
+
+
 
 }
 

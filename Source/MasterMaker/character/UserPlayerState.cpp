@@ -436,8 +436,10 @@ void AUserPlayerState::vehicleFireOnServer_Implementation(const FVector& Locatio
         }
 
         ABullet* bullet_ptr = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), Location, FRotator(0, 0, 0));
-        if (bullet_ptr != nullptr)
-            bullet_ptr->addFireImpulse(Direction, 500 * 5);
+        if (bullet_ptr != nullptr) {
+            bullet_ptr->setMassAndStrenght(1, 1);
+            bullet_ptr->addFireImpulse(Direction, 300);
+        }
 
         vehicleFireOnMulticast(Location, Direction);
     }
@@ -454,8 +456,10 @@ void AUserPlayerState::vehicleFireOnMulticast_Implementation(const FVector& Loca
 
         ABullet* bullet_ptr = GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), Location, FRotator(0, 0, 0));
 
-        if (bullet_ptr != nullptr)
-            bullet_ptr->addFireImpulse(Direction, 500 * 5);
+        if (bullet_ptr != nullptr) {
+            bullet_ptr->setMassAndStrenght(1, 1);
+            bullet_ptr->addFireImpulse(Direction, 300);
+        }
     }
 }
 

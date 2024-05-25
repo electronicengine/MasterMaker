@@ -36,7 +36,7 @@ class MASTERMAKER_API AWeaponBrick : public ABrick
         UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
         UCameraComponent* Camera;
     UParticleSystem* Particle_Effect;
-
+    bool Initialized_;
     USceneComponent* barrel;
     ACharacter* User_;
     int Last_Time;

@@ -23,7 +23,7 @@ AWeaponBrick::AWeaponBrick()
     Healt_ = 900000;
     Type_ = WeaponType::fire;
     Owned_ = false;
-
+    Initialized_ = false;
 }
 
 void AWeaponBrick::notifyVehicleDetached()
@@ -156,8 +156,9 @@ void AWeaponBrick::makePluginSettings()
         setCollisionProfile("BlockAll");
         Brick->SetCollisionEnabled(ECollisionEnabled::Type::QueryAndPhysics);
         Brick->SetNotifyRigidBodyCollision(true);
+        if(!Initialized_)
+            Brick->OnComponentHit.AddDynamic(this, &AWeaponBrick::OnHit);
 
-        Brick->OnComponentHit.AddDynamic(this, &AWeaponBrick::OnHit);
         break;
     case WeaponType::explosive:
         enablePhysics(true);
@@ -167,7 +168,8 @@ void AWeaponBrick::makePluginSettings()
         Brick->SetNotifyRigidBodyCollision(true);
         SetLifeSpan(20);
         Mass_ = 200;
-        Brick->OnComponentHit.AddDynamic(this, &AWeaponBrick::OnHit);
+        if (!Initialized_)
+            Brick->OnComponentHit.AddDynamic(this, &AWeaponBrick::OnHit);
         break;
     case WeaponType::cluster:
         Mass_ = 200;
@@ -179,6 +181,8 @@ void AWeaponBrick::makePluginSettings()
     default:
         break;
     }
+
+    Initialized_ = true;
 
 }
 

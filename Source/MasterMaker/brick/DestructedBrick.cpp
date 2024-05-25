@@ -69,17 +69,17 @@ void ADestructedBrick::setColor(FVector ColorVec)
         Pieces[i]->SetVectorParameterValueOnMaterials(FName("BaseColor"), FVector(ColorVec));
     }
 
-
 }
 
 
 void ADestructedBrick::setImpactPointAndVelocity(const FVector& ImpactPoint, const FVector& Velocity)
 {
-
+    FVector force = Velocity * 1000000;
+    force *= 500;
     for (UStaticMeshComponent* comp : Pieces)
     {
         //comp->AddImpulseAtLocation(Velocity, ImpactPoint);
-        comp->AddForceAtLocation(Velocity * comp->GetBodyInstance()->GetBodyMass() , ImpactPoint);
+        //comp->AddForceAtLocation(force, ImpactPoint);
         //comp->AddRadialImpulse(ImpactPoint, 100, Velocity.Size(), ERadialImpulseFalloff::RIF_Linear, false);
     }
 }
@@ -122,7 +122,10 @@ void ADestructedBrick::setCubeManCharacterMesh(const TArray<UStaticMesh*>& Meshe
     for (UStaticMesh* asset : Meshes)
     {
         UStaticMesh* mesh = Cast<UStaticMesh>(asset);
+
         Pieces[i]->SetStaticMesh(mesh);
+        Pieces[i]->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+        Pieces[i]->SetSimulatePhysics(true);
 
         TArray<FName> material_names = Pieces[i]->GetMaterialSlotNames();
 

@@ -83,6 +83,8 @@ void ABullet::BeginPlay()
     Super::BeginPlay();
     Bullet_Mesh->SetMassOverrideInKg(NAME_None, 5);
     Strenght_ = 0.001;
+    Bullet_Mesh->SetCollisionResponseToChannel(COLLISION_CHARACTER, ECR_Overlap);
+
 }
 
 
