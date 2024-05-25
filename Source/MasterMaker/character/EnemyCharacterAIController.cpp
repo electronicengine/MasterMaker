@@ -3,6 +3,7 @@
 
 #include "EnemyCharacterAIController.h"
 #include "UserCharacter.h"
+#include "Navigation/PathFollowingComponent.h" // For FPathFollowingResult
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
@@ -105,7 +106,7 @@ void AEnemyCharacterAIController::Tick(float DeltaSeconds)
 void AEnemyCharacterAIController::punchToEnemy()
 {
 
-	GetWorld()->GetTimerManager().SetTimer(Punch_Timer_Handle, [=]()
+	GetWorld()->GetTimerManager().SetTimer(Punch_Timer_Handle, [this]()
 		{
 			FVector character_location;
 			APawn* pwn = GetPawn();

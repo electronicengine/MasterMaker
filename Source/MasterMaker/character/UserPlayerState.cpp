@@ -4,11 +4,19 @@
 #include "UserPlayerState.h"
 #include "UserCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/World.h"                
+#include "Engine/EngineTypes.h"         
+#include "Components/PrimitiveComponent.h" 
+#include "GameFramework/Pawn.h"           
+#include "GameFramework/Actor.h"          
+#include "UserPlayerState.h"              
+#include "UserCharacter.h"                
 #include "../brick/Brick.h"
 #include "../MasterMakerGameInstance.h"
 #include "../widget/GamePlayWidget.h"
 #include "../level/MasterMakerSaveGame.h"
 #include "../brick/weapon/WeaponBrick.h"
+#include "Engine/OverlapResult.h"
 
 int AUserPlayerState::Current_Id_Counter = 1;
 
@@ -106,7 +114,7 @@ void AUserPlayerState::interact()
 
     if (Cast<AVehicleBase>(GetPawn())) {
         Cast<AVehicleBase>(GetPawn())->exitCar();
-        if (!GetWorld()->IsServer()) {
+        if (GetNetMode() == ENetMode::NM_Client) {
             exitVehicleOnServer();
         }
     }
@@ -266,7 +274,7 @@ void AUserPlayerState::fireOnServer_Implementation(const FVector& Location, cons
 {
     _Char = Cast<AUserCharacter>(GetPawn());
 
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         _Char->fire(Location, ForwardVector);
         fireOnMulticast(Location, ForwardVector);
     }
@@ -276,7 +284,7 @@ void AUserPlayerState::fireOnMulticast_Implementation(const FVector& Location, c
 {
     _Char = Cast<AUserCharacter>(GetPawn());
 
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         _Char->fire(Location, ForwardVector);
     }
 }
@@ -284,7 +292,7 @@ void AUserPlayerState::fireOnMulticast_Implementation(const FVector& Location, c
 void AUserPlayerState::buyBrickOnServer_Implementation(const FVector& Location, const FLinearColor& Color, const FString& Name)
 {
 
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         int id = getUniq();
 
 
@@ -302,7 +310,7 @@ void AUserPlayerState::buyBrickOnServer_Implementation(const FVector& Location, 
             if (Cast<IBreakableInterface>(spawned_object))
                 Cast<IBreakableInterface>(spawned_object)->setId(id);
 
-            GetWorld()->GetTimerManager().SetTimer(TimerHandle, [=]()
+            GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, Location, Color, Name, id]()
                 {
                     buyBrickOnMulticast(Location, Color, Name, id);
                 }, 0.5, false);
@@ -316,7 +324,7 @@ void AUserPlayerState::buyBrickOnMulticast_Implementation(const FVector& Locatio
 {
     _Char = Cast<AUserCharacter>(GetPawn());
 
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         if (Name.Find(VEHICLE_APPENDIX) < 0 && Name.Find(CHARACTER_APPENDIX) < 0) {
             _Char->Game_Instance->Selected_Color = Color;
             _Char->buyBrick(Location, Name, Id);
@@ -336,7 +344,7 @@ void AUserPlayerState::plugObjectOnServer_Implementation(const FVector& TargetPl
 {
     _Char = Cast<AUserCharacter>(GetPawn());
 
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         IPlugInterface* pluggable = Cast<IPlugInterface>(_Char->Target_Plugable_Item);
 
         if (!pluggable) {
@@ -358,7 +366,7 @@ void AUserPlayerState::plugObjectOnMulticast_Implementation(const FVector& Targe
 {
     _Char = Cast<AUserCharacter>(GetPawn());
 
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         IPlugInterface* pluggable = Cast<IPlugInterface>(_Char->Target_Plugable_Item);
         if (!pluggable) {
             pluggable = findItemById<IPlugInterface>(TargetId);
@@ -373,7 +381,7 @@ void AUserPlayerState::plugObjectOnMulticast_Implementation(const FVector& Targe
 
 void AUserPlayerState::equipVehicleOnServer_Implementation(int Id)
 {
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         AVehicleBase* object_nearby = findItemById<AVehicleBase>(Id);
 
         _Char->enteredToCar(object_nearby);
@@ -385,7 +393,7 @@ void AUserPlayerState::equipVehicleOnServer_Implementation(int Id)
 
 void AUserPlayerState::equipVehicleOnMulticast_Implementation(int Id)
 {
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         AVehicleBase* object_nearby = findItemById<AVehicleBase>(Id);
         _Char->enteredToCar(object_nearby);
     }
@@ -401,22 +409,17 @@ AActor* AUserPlayerState::findPlugableAtLocation(FVector Location, float SearchR
 {
     _Char = Cast<AUserCharacter>(GetPawn());
 
-    // Define the shape and size of the overlap (e.g., a sphere)
     FCollisionShape CollisionShape = FCollisionShape::MakeSphere(SearchRadius);
 
-    // Perform the overlap query
     TArray<FOverlapResult> OverlapResults;
     GetWorld()->OverlapMultiByChannel(OverlapResults, Location, FQuat::Identity, ECC_Pawn, CollisionShape);
 
-    for (const FOverlapResult& OverlapResult : OverlapResults)
+    for (const auto& result : OverlapResults)
     {
-        // Retrieve the actor from the overlap result
-        AActor* plugable = OverlapResult.GetActor();
+        AActor* plugable = result.GetActor();
 
         if (plugable)
         {
-            // You can now work with the actor found at the location
-            // For example, print the actor's name
             return plugable;
         }
     }
@@ -428,7 +431,7 @@ AActor* AUserPlayerState::findPlugableAtLocation(FVector Location, float SearchR
 void AUserPlayerState::vehicleFireOnServer_Implementation(const FVector& Location, const FVector& Direction)
 {
 
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         AVehicleBase* vehicle = Cast<AVehicleBase>(GetPawn());
         if (vehicle) {
             if (!vehicle->Passenger_)
@@ -447,7 +450,7 @@ void AUserPlayerState::vehicleFireOnServer_Implementation(const FVector& Locatio
 
 void AUserPlayerState::vehicleFireOnMulticast_Implementation(const FVector& Location, const FVector& Direction)
 {
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         AVehicleBase* vehicle = Cast<AVehicleBase>(GetPawn());
         if (vehicle) {
             if (!vehicle->Passenger_)
@@ -465,7 +468,7 @@ void AUserPlayerState::vehicleFireOnMulticast_Implementation(const FVector& Loca
 
 void AUserPlayerState::destroyedBrickOnServer_Implementation(int DestroyedId)
 {
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
 
         IBreakableInterface* item = findItemById<IBreakableInterface>(DestroyedId);
         if (item)
@@ -477,7 +480,7 @@ void AUserPlayerState::destroyedBrickOnServer_Implementation(int DestroyedId)
 
 void AUserPlayerState::destroyedBrickOnMulticast_Implementation(int DestroyedId)
 {
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         IBreakableInterface* item = findItemById<IBreakableInterface>(DestroyedId);
         if (item)
             item->breakItem(FVector(0, 0, 0), FVector(0, 0, 0));
@@ -488,7 +491,7 @@ void AUserPlayerState::destroyedBrickOnMulticast_Implementation(int DestroyedId)
 void AUserPlayerState::destroyedVehicleOnServer_Implementation(int Id, const FVector& Location, const FRotator& Rotation)
 {
 
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         AVehicleBase* vehicle = findItemById<AVehicleBase>(Id);
         if (vehicle) {
 
@@ -515,7 +518,7 @@ void AUserPlayerState::destroyedVehicleOnServer_Implementation(int Id, const FVe
 
 void AUserPlayerState::destroyedVehicleOnMulticast_Implementation(int Id, const FVector& Location, const FRotator& Rotation)
 {
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
 
         ADestructedBrick* dest_ptr = GetWorld()->SpawnActor<ADestructedBrick>(ADestructedBrick::StaticClass(), Location, Rotation);
         dest_ptr->setMesh("VehicleBase8x2");
@@ -525,7 +528,7 @@ void AUserPlayerState::destroyedVehicleOnMulticast_Implementation(int Id, const 
 
 void AUserPlayerState::equipBrickOnServer_Implementation(int Id)
 {
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         _Char = Cast<AUserCharacter>(GetPawn());
 
         ABrick* brick = findItemById<ABrick>(Id);
@@ -539,7 +542,7 @@ void AUserPlayerState::equipBrickOnServer_Implementation(int Id)
 
 void AUserPlayerState::equipBrickOnMulticast_Implementation(int Id)
 {
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         _Char = Cast<AUserCharacter>(GetPawn());
 
         ABrick* brick = findItemById<ABrick>(Id);
@@ -552,7 +555,7 @@ void AUserPlayerState::equipBrickOnMulticast_Implementation(int Id)
 
 void AUserPlayerState::dropBrickOnServer_Implementation(int Id)
 {
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         _Char = Cast<AUserCharacter>(GetPawn());
 
         ABrick* brick = findItemById<ABrick>(Id);
@@ -565,7 +568,7 @@ void AUserPlayerState::dropBrickOnServer_Implementation(int Id)
 }
 void AUserPlayerState::dropBrickOnMulticast_Implementation(int Id)
 {
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         _Char = Cast<AUserCharacter>(GetPawn());
 
         ABrick* brick = findItemById<ABrick>(Id);
@@ -577,7 +580,7 @@ void AUserPlayerState::dropBrickOnMulticast_Implementation(int Id)
 
 void AUserPlayerState::hookCableOnServer_Implementation(int ConstraitsId, int TargetId)
 {
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         IPlugInterface* target = findItemById<IPlugInterface>(TargetId);
         AMechanicBrick* cable_start = findItemById<AMechanicBrick>(ConstraitsId);
 
@@ -592,7 +595,7 @@ void AUserPlayerState::hookCableOnServer_Implementation(int ConstraitsId, int Ta
 
 void AUserPlayerState::hookCableOnMulticast_Implementation(int ConstraitsId, int TargetId)
 {
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         IPlugInterface* target = findItemById<IPlugInterface>(TargetId);
         AMechanicBrick* cable_start = findItemById<AMechanicBrick>(ConstraitsId);
 
@@ -604,7 +607,7 @@ void AUserPlayerState::hookCableOnMulticast_Implementation(int ConstraitsId, int
 
 void AUserPlayerState::turnOnOffMachineOnServer_Implementation(int ConstraitsId)
 {
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         AMechanicBrick* machine = findItemById<AMechanicBrick>(ConstraitsId);
 
         if (machine)
@@ -618,7 +621,7 @@ void AUserPlayerState::turnOnOffMachineOnServer_Implementation(int ConstraitsId)
 
 void AUserPlayerState::turnOnOffMachineOnMulticast_Implementation(int ConstraitsId)
 {
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         AMechanicBrick* machine = findItemById<AMechanicBrick>(ConstraitsId);
 
         if (machine)
@@ -628,7 +631,7 @@ void AUserPlayerState::turnOnOffMachineOnMulticast_Implementation(int Constraits
 
 void AUserPlayerState::loadOnServer_Implementation(const FString& Info, const FVector& Location)
 {
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         UMasterMakerGameInstance* game_instance = Cast<UMasterMakerGameInstance>(GetWorld()->GetGameInstance());
         UMasterMakerSaveGame* save_game = Cast<UMasterMakerSaveGame>(UGameplayStatics::CreateSaveGameObject(UMasterMakerSaveGame::StaticClass()));
 
@@ -641,7 +644,7 @@ void AUserPlayerState::loadOnServer_Implementation(const FString& Info, const FV
         Current_Id_Counter += IComposerInterface::Start_ID;
 
         FTimerHandle TimerHandle;
-        GetWorld()->GetTimerManager().SetTimer(TimerHandle, [=]()
+        GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, Info, Location, id]()
             {
                 loadOnMulticast(Info, Location, id);
             }, 1, false);
@@ -652,7 +655,7 @@ void AUserPlayerState::loadOnServer_Implementation(const FString& Info, const FV
 
 void AUserPlayerState::loadOnMulticast_Implementation(const FString& Info, const FVector& Location, int StartId)
 {
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         UMasterMakerGameInstance* game_instance = Cast<UMasterMakerGameInstance>(GetWorld()->GetGameInstance());
         UMasterMakerSaveGame* save_game = Cast<UMasterMakerSaveGame>(UGameplayStatics::CreateSaveGameObject(UMasterMakerSaveGame::StaticClass()));
 
@@ -667,7 +670,7 @@ void AUserPlayerState::loadOnMulticast_Implementation(const FString& Info, const
 
 void AUserPlayerState::throwItemOnServer_Implementation(int ItemId, const FVector& ForceVector)
 {
-    if (GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_ListenServer || GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_DedicatedServer) {
         AActor* item = Cast<AActor>(findItemById<ABrick>(ItemId));
         _Char = Cast<AUserCharacter>(GetPawn());
 
@@ -680,7 +683,7 @@ void AUserPlayerState::throwItemOnServer_Implementation(int ItemId, const FVecto
 
 void AUserPlayerState::throwItemOnMulticast_Implementation(int ItemId, const FVector& ForceVector)
 {
-    if (!GetWorld()->IsServer()) {
+    if (GetNetMode() == ENetMode::NM_Client) {
         AActor* item = Cast<AActor>(findItemById<ABrick>(ItemId));
         _Char = Cast<AUserCharacter>(GetPawn());
 

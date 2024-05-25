@@ -23,18 +23,9 @@ bool IBreakableInterface::addDamage(float Value, const FVector& ImpactPoint, con
 
 
     if (this && !Breaked_) {
-        FVector Origin;
-        FVector BoxExtent;
-        float SphereRadius;
 
-        UKismetSystemLibrary::GetComponentBounds(Cast<AActor>(this)->GetRootComponent(), Origin, BoxExtent, SphereRadius);
-        if ((ImpactPoint - Origin).Size() <= SphereRadius || Cast<AEnemyCharacter>(this)) {
-            ret = addDamageToSelf(Value, ImpactPoint, Velocity);
-        }
-        else {
-                
-            addDamageToPlugins(Value, ImpactPoint, Velocity);
-        }
+        ret = addDamageToSelf(Value, ImpactPoint, Velocity);
+
     }
 
     return ret;

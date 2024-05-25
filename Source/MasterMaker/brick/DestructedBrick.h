@@ -26,7 +26,7 @@ public:
 	UMaterial* CubeMan_Shirt_Material;
 	UMaterial* CubeMan_Pant_Material;
 	UMaterial* CubeMan_Hair_Material;
-
+	FString Name_;
 
 protected:
 	// Called when the game starts or when spawned

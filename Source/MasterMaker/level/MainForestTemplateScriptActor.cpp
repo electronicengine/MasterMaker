@@ -80,7 +80,7 @@ void AMainForestTemplateScriptActor::startNewEnemyWaveIfEnded()
 {
 	if (Spawned_Enemy_Vehicles.size() == 0 && Spawned_Enemy_Characters.size() == 0 && Game_Playing) {
 		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [=]()
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 			{
 				startEnemyWave(++Level_);
 
@@ -102,7 +102,7 @@ void AMainForestTemplateScriptActor::startEnemyWave(int Tier)
 		if (Tier * 6 < Level_Character_Spawn_Count)
 			Level_Character_Spawn_Count = Tier * 6;
 
-		GetWorld()->GetTimerManager().SetTimer(Spawn_Character_Timer, [=]()
+		GetWorld()->GetTimerManager().SetTimer(Spawn_Character_Timer, [this]()
 			{
 				spawnEnemyCharacter(Spawn_Points[FMath::Rand() % 3], 400);
 
@@ -119,13 +119,13 @@ void AMainForestTemplateScriptActor::startEnemyWave(int Tier)
 			Level_Vehicle_Spawn_Count = Tier;
 
 
-		GetWorld()->GetTimerManager().SetTimer(Spawn_Character_Timer, [=]()
+		GetWorld()->GetTimerManager().SetTimer(Spawn_Character_Timer, [this]()
 			{
 				spawnEnemyCharacter(Spawn_Points[FMath::Rand() % 3], 400);
 
 			}, 1, true);
 
-		GetWorld()->GetTimerManager().SetTimer(Spawn_Vehicle_Timer, [=]()
+		GetWorld()->GetTimerManager().SetTimer(Spawn_Vehicle_Timer, [this]()
 			{
 				spawnEnemyVehicle(Spawn_Points[FMath::Rand() % 3], 400);
 

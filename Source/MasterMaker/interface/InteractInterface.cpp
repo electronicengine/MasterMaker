@@ -245,8 +245,9 @@ void IInteractInterface::enterCar(AUserCharacter* LegoChar)
 
     AController* lego_man_controller = Passenger_->GetController();
 
+    ENetMode netMode = LegoChar->GetWorld()->GetNetMode();
 
-    if (LegoChar->GetWorld()->IsServer())
+    if (netMode == ENetMode::NM_ListenServer || netMode == ENetMode::NM_Standalone || netMode == ENetMode::NM_DedicatedServer)
         lego_man_controller->Possess(Cast<AVehicleBase>(this));
 
     if (Weapons.size() > 0) {

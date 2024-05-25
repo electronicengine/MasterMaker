@@ -100,8 +100,6 @@ float IPlugInterface::calculateDistance(const FVector& Vector1, const FVector& V
     FVector delta = Vector1 - Vector2;
 
     return delta.Size();
-
-    return 0.f;
 }
 
 
@@ -155,7 +153,6 @@ bool IPlugInterface::highLightPlugin(UStaticMeshComponent* Ghost_Brick, UMateria
         return false;
     }
 
-    return true;
 }
 
 

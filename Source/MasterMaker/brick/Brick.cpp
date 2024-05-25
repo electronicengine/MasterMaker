@@ -93,8 +93,9 @@ void ABrick::enablePhysics(bool Value)
 
 void ABrick::setCollisionProfile(FString Profile)
 {
-    if (Brick)
+    if (Brick){
         Brick->SetCollisionProfileName(FName(Profile));
+    }
 
     //if (Cast<AMechanicBrick>(this)) {
     //    Cast<AMechanicBrick>(this)->Add->SetCollisionProfileName(FName(Profile));

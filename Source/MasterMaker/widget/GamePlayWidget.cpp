@@ -249,7 +249,7 @@ void UGamePlayWidget::Button_StartClicked()
 	Button_Start->SetVisibility(ESlateVisibility::Hidden);
 
 	FTimerHandle timer;
-	GetWorld()->GetTimerManager().SetTimer(timer, [=]()
+	GetWorld()->GetTimerManager().SetTimer(timer, [this]()
 		{
 			Button_Stop->SetVisibility(ESlateVisibility::Visible);
 			#ifdef DESKTOP_BUILD
@@ -265,7 +265,7 @@ void UGamePlayWidget::Button_StartClicked()
 void UGamePlayWidget::Button_StopClicked()
 {
 	FTimerHandle timer;
-	GetWorld()->GetTimerManager().SetTimer(timer, [=]()
+	GetWorld()->GetTimerManager().SetTimer(timer, [this]()
 		{
 			Button_Start->SetVisibility(ESlateVisibility::Visible);
 			#ifdef DESKTOP_BUILD
@@ -420,7 +420,7 @@ void UGamePlayWidget::setMessage(const FString& Message, float TimeOut)
 	Text_Message->SetVisibility(ESlateVisibility::Visible);
 
 	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [=]()
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
 		{
 			Text_Message->SetVisibility(ESlateVisibility::Hidden);
 

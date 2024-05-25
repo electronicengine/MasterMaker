@@ -217,7 +217,7 @@ void AUserCharacter::punch()
         PlayAnimMontage(Punch_Animation, 1.0f, FName("Punch"));
         Punching = true;
         FTimerHandle TimerHandle;
-        GetWorld()->GetTimerManager().SetTimer(TimerHandle, [=]()
+        GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
             {
                 GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
                 Punching = false;

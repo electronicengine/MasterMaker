@@ -62,7 +62,7 @@ void AEnemyCharacter::punch(AActor* PunchtoActor)
 	PlayAnimMontage(Punch_Animation, 1.0f, FName("Punch"));
 
 	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [=]()
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, PunchtoActor]()
 		{
 			if (Cast<ABrick>(PunchtoActor)) {
 				Cast<ABrick>(PunchtoActor)->addDamage(3, GetActorLocation(), GetActorForwardVector() * 100);

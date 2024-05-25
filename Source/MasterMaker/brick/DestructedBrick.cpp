@@ -74,13 +74,15 @@ void ADestructedBrick::setColor(FVector ColorVec)
 
 void ADestructedBrick::setImpactPointAndVelocity(const FVector& ImpactPoint, const FVector& Velocity)
 {
-    FVector force = Velocity * 1000000;
-    force *= 500;
+
     for (UStaticMeshComponent* comp : Pieces)
     {
-        //comp->AddImpulseAtLocation(Velocity, ImpactPoint);
-        //comp->AddForceAtLocation(force, ImpactPoint);
-        //comp->AddRadialImpulse(ImpactPoint, 100, Velocity.Size(), ERadialImpulseFalloff::RIF_Linear, false);
+        if (Name_.Find(CHARACTER_APPENDIX) >= 0) {
+            comp->AddImpulseAtLocation(Velocity * 0.01, ImpactPoint);
+            //comp->AddForceAtLocation(force, ImpactPoint);
+            //comp->AddRadialImpulse(ImpactPoint, 100, Velocity.Size(), ERadialImpulseFalloff::RIF_Linear, false);
+        }
+
     }
 }
 
@@ -162,11 +164,11 @@ void ADestructedBrick::setMesh(FString Name)
 {
     UMasterMakerGameInstance* instance = Cast<UMasterMakerGameInstance>(GetGameInstance());
     TArray<UStaticMesh*> assets = instance->Destructed_Meshes[Name];
-
-    if (Name.Find("CubeMan") >= 0) {
+    Name_ = Name;
+    if (Name.Find(CHARACTER_APPENDIX) >= 0) {
         setCubeManCharacterMesh(assets);
     }
-    else if (Name.Find("Vehicle") >= 0) {
+    else if (Name.Find(VEHICLE_APPENDIX) >= 0) {
         setVehicleMesh(assets);
     }
     else {
